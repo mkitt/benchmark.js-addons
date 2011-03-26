@@ -9,7 +9,7 @@ test:
 	@node test/cli_runner.js
 
 demo:
-	@node examples/node-example.js
+	@node examples/node-demo.js
 
 open:
 	@open http://localhost/benchmark.js-addons/test/
