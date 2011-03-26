@@ -143,6 +143,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
    *   // benchmark test function
    *   'fn': fn
    * });
+   *
+   * // a test's `this` binding is set to the benchmark instance
+   * var bench = new Benchmark('foo', function() {
+   *   'My name is '.concat(this.name); // My name is foo
+   * });
    */
   function Benchmark(name, fn, options) {
     // juggle arguments
@@ -274,7 +279,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
         timerNS = Date,
         msRes = getRes('ms'),
         timer = { 'ns': timerNS, 'res': max(0.0015, msRes), 'unit': 'ms' },
-        code = '#{setup}var r$,i$=m$.count,f$=m$.fn,#{start};while(i$--){|}#{end};#{teardown}return{time:r$,uid:"$"}|m$.teardown&&m$.teardown();|f$()|m$.setup&&m$.setup();|m$,n$';
+        code = 'var r$,s$,m$=this,i$=m$.count,f$=m$.fn;#{setup}#{start};while(i$--){|}#{end};#{teardown}return{time:r$,uid:"$"}|m$.teardown&&m$.teardown();|f$()|m$.setup&&m$.setup();|n$';
 
     clock = function(me) {
       var result,
@@ -303,11 +308,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
             // determine if compiled code is exited early, usually by a rogue
             // return statement, by checking for a return object with the uid
             me.count = 1;
-            compiled = fn.compiled = compiled(me, timerNS).uid == EMBEDDED_UID && compiled;
+            compiled = fn.compiled = compiled.call(me, timerNS).uid == EMBEDDED_UID && compiled;
             me.count = count;
           }
           if (compiled) {
-            result = compiled(me, timerNS).time;
+            result = compiled.call(me, timerNS).time;
           }
         } catch(e) {
           me.count = count;
@@ -316,7 +321,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
       }
       // fallback to simple while-loop when compiled is false
       if (!compiled) {
-        result = fallback(me, timerNS).time;
+        result = fallback.call(me, timerNS).time;
       }
       return result;
     };
@@ -539,7 +544,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
    * @param {Object} [options={}] Options object.
    */
   function setOptions(me, options) {
-    me.options = forIn(extend({ }, options), function(value, key) {
+    options = extend(extend({ }, me.constructor.options), options);
+    me.options = forIn(options, function(value, key) {
       // add event listeners
       if (/^on[A-Z]/.test(key)) {
         each(key.split(' '), function(key) {
@@ -1357,7 +1363,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
     function enqueue(count) {
       while (count--) {
         queue.push(me.clone({
-          'computing': true,
+          'computing': me,
           'events': { 'start': [update], 'cycle': [update] }
         }));
       }
@@ -1368,8 +1374,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
       var clone = this;
       if (me.running) {
         if (clone.cycles) {
-          me.count = clone.count;
-          me.cycles += clone.cycles;
+          // the me.count and me.cycles props of the host are updated in cycle() below
           me.hz = clone.hz;
           me.times.period = clone.times.period;
           me.INIT_RUN_COUNT = clone.INIT_RUN_COUNT;
@@ -1457,7 +1462,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
     }
 
     // init sample/queue and begin
-    enqueue(sample.length ? 1 : me.MIN_SAMPLE_SIZE);
+    enqueue(me.MIN_SAMPLE_SIZE);
     invoke(queue, { 'name': 'run', 'args': async, 'queued': true, 'onCycle': evaluate });
   }
 
@@ -1476,13 +1481,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
           minTime,
           period,
           count = me.count,
+          host = me.computing,
           times = me.times;
 
       // continue, if not aborted between cycles
       if (me.running) {
         me.cycles++;
+        host.cycles++;
+        host.count = count;
+
         try {
-          clocked = clock(me);
+          clocked = clock(host);
           minTime = me.MIN_TIME;
         } catch(e) {
           me.abort();
@@ -1749,6 +1758,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
      * @type String
      */
     'version': '0.1.348',
+
+    /**
+     * The default options object copied by instances.
+     * @static
+     * @member Benchmark
+     * @type Object
+     */
+    'options': { },
 
     // generic Array#forEach
     'each': each,
@@ -2069,6 +2086,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.*/
     // runs the benchmark
     'run': run
   });
+
+  /*--------------------------------------------------------------------------*/
+
+  /**
+   * The default options object copied by instances.
+   * @static
+   * @member Benchmark.Suite
+   * @type Object
+   */
+  Suite.options = { };
 
   /*--------------------------------------------------------------------------*/
 
