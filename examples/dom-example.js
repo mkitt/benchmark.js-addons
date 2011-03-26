@@ -1,7 +1,7 @@
 
 (function() {
   var array_suite = new Benchmark.Suite('Array');
-  var array_reporter = new Benchmark.Reporter(array_suite, 'log', true);
+  var array_reporter = new Benchmark.Reporter(array_suite);
 
   array_suite.add('Array with brackets', function() {
     var a = [];
