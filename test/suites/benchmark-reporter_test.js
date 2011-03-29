@@ -7,7 +7,7 @@
     require.paths.push('./tools');
     require.paths.push('./src');
     Benchmark = require('benchmark');
-    Reporter = require('benchmark-reporter');
+    require('benchmark-reporter');
   }
 
   describe('Benchmark Reporter', function() {
