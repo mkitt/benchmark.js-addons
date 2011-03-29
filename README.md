@@ -11,7 +11,7 @@ Build:
 
 Reporter:
 
-Suites:
+Test Case:
 - Allow multiple suites as async runners - dequeue
 
 DOM Insertion:
