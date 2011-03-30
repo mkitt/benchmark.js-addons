@@ -6,17 +6,49 @@
 
   function TestCase(suites) {
     this.suites = suites || [];
+    this.current_suite = null;
+    this.total_suites = this.suites.length || 0;
   }
   Benchmark.TestCase = TestCase;
 
   Benchmark.extend(Benchmark.TestCase.prototype, {
+
+    dequeue: function() {
+      if (this.suites.length > 0)
+        return this.suites.shift();
+      return null;
+    },
+
     addSuite: function(suite) {
       this.suites.push(suite);
+      this.total_suites += 1;
     },
 
     addSuites: function(suites) {
       for (var i = 0, len = suites.length; i < len; i += 1) {
-        this.suites.push(suites[i]);
+        this.addSuite(suites[i]);
+      }
+    },
+
+    start: function() {
+      var me = this;
+      this.current_suite.on('complete', function(bench) {
+        me.run(true);
+      });
+      this.current_suite.run();
+    },
+
+    complete: function() {
+      if (console)
+        console.log('\nTotal Suites Run: ' + this.total_suites);
+    },
+
+    run: function() {
+      this.current_suite = this.dequeue();
+      if (this.current_suite) {
+        this.start();
+      } else {
+        this.complete();
       }
     },
 

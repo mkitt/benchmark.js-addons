@@ -93,6 +93,30 @@
       });
     });
 
+    describe('#run, #dequeue, #complete', function() {
+      it('should run a test case of suites and dequeue all', function() {
+        var suite1 = new Benchmark.Suite('Suite1');
+        var suite2 = new Benchmark.Suite('Suite2');
+
+        suite1.add('Empty function', function() {});
+        suite1.add('Property declaration', function() {
+          var a;
+        });
+        suite2.add('Empty function 2', function() {});
+        suite2.add('Property declaration 2', function() {
+          var a;
+        });
+
+        var cases = new Benchmark.TestCase([suite1, suite2]);
+        spyOn(cases, 'complete');
+        expect(cases.suites.length).toEqual(2);
+        cases.run();
+        expect(cases.suites.length).toEqual(0);
+        expect(cases.complete).toHaveBeenCalled();
+      });
+
+    });
+
   });
 }());
 
