@@ -4,7 +4,7 @@ A few helper files to streamline writing [benchmark.js][benchmark.js] tests.
 
 ## Usage
 
-Running tests, demos, builds, etc. is mainly available from the Makefile. Should be fairly self explanatory.
+Running tests, demos, builds, etc. is mainly available from the Makefile.
 
 
 ### Reporters
