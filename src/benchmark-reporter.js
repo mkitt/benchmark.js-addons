@@ -41,7 +41,7 @@
 
     handleStart: function(bench) {
       var env = Benchmark.platform.description;
-      this.log(env + '\nRunning ' + this.suite.name + ' Benchmarks');
+      this.log('\n' + env + '\nRunning ' + this.suite.name + ' Benchmarks');
     },
 
     handleCycle: function(bench) {
