@@ -93,7 +93,7 @@ Note: to run the tests with [node.js][node.js] you'll need [jasmine-node][jasmin
 
 [benchmark.js]: http://benchmarkjs.com/
 [node.js]: http://nodejs.org/
-[jasmine]: http://pivotal.github.com/jasmine/
+[jasmine]: https://jasmine.github.io/
 [jasmine-dom]: https://github.com/jeffwatkins/jasmine-dom
 [jasmine-node]: https://github.com/mhevery/jasmine-node
 
